@@ -80,9 +80,12 @@ export function ChatInterface({ apiUrl = 'http://localhost:5000' }: ChatInterfac
 
       setMessages(prev => [...prev, assistantMessage])
     } catch (error: any) {
+      // Get more specific error message from response
+      const errorDetails = error.response?.data?.error || error.message || 'Unknown error'
+      
       const errorMessage: Message = {
         role: 'assistant',
-        content: '❌ Sorry, I encountered an error processing your question. This could be because:\n\n• The RAG system is not initialized\n• The OpenAI API key is missing\n• There was a connection issue\n\nPlease check the backend logs and try again.',
+        content: `❌ Sorry, I encountered an error processing your question:\n\n**Error:** ${errorDetails}\n\n**Possible causes:**\n• Ollama service is not running with NVIDIA GPU (run: \`start_ollama_nvidia.bat\`)\n• The tinyllama model is not installed (run: \`ollama pull tinyllama\`)\n• The RAG system is still initializing (wait a moment and try again)\n• Backend connection issue (check if backend is running on port 5000)\n\nPlease check the backend terminal for detailed logs.`,
         timestamp: new Date()
       }
       setMessages(prev => [...prev, errorMessage])

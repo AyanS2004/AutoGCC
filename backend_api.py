@@ -269,13 +269,14 @@ def health_check():
         'timestamp': datetime.now().isoformat()
     })
 
-# RAG Chat Endpoints
+# RAG Chat Endpoints - Using FAISS (lightweight) instead of ChromaDB
 try:
-    from rag_engine import get_rag_engine, is_rag_available
+    from rag_engine_faiss import get_rag_engine, is_rag_available
     RAG_ENABLED = is_rag_available()
+    print("Using FAISS-based RAG engine (lightweight, memory-efficient)")
 except ImportError:
     RAG_ENABLED = False
-    print("Warning: RAG functionality not available. Install requirements: pip install langchain langchain-community ollama chromadb sentence-transformers")
+    print("Warning: RAG functionality not available. Install requirements: pip install langchain langchain-community ollama faiss-cpu sentence-transformers")
 
 rag_engine = None
 
@@ -414,5 +415,6 @@ if __name__ == '__main__':
     print("Frontend should be running on http://localhost:3000")
     print(f"RAG Chat: {'Enabled' if RAG_ENABLED else 'Disabled (install dependencies)'}")
     print("=" * 80)
-    app.run(debug=True, port=5000, host='0.0.0.0')
+    # Disable reloader to prevent interruptions during RAG initialization
+    app.run(debug=True, port=5000, host='0.0.0.0', use_reloader=False)
 

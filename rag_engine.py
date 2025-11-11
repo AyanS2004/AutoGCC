@@ -14,16 +14,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 try:
-    from langchain_community.embeddings import HuggingFaceEmbeddings
+    from langchain_huggingface import HuggingFaceEmbeddings
     from langchain_community.vectorstores import Chroma
     from langchain.chains import RetrievalQA
     from langchain_community.llms import Ollama
     from langchain.prompts import PromptTemplate
     from langchain.schema import Document
     LANGCHAIN_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     LANGCHAIN_AVAILABLE = False
-    print("Warning: LangChain not installed. Install with: pip install langchain langchain-community ollama chromadb sentence-transformers")
+    print(f"Warning: LangChain not installed or incomplete. Error: {str(e)}")
+    print("Install with: pip install langchain langchain-community langchain-huggingface ollama chromadb")
 
 
 class GCCDataRAG:
@@ -31,9 +32,9 @@ class GCCDataRAG:
     
     def __init__(
         self,
-        excel_file: str = 'solutions.xlsx',
+        excel_file: str = 'book_final.xlsx',
         persist_directory: str = './chroma_db',
-        local_model: str = 'llama2'
+        local_model: str = 'tinyllama'
     ):
         if not LANGCHAIN_AVAILABLE:
             raise ImportError("LangChain is required for RAG functionality")
@@ -42,10 +43,12 @@ class GCCDataRAG:
         self.persist_directory = persist_directory
         self.local_model = local_model
         
-        # Initialize embeddings - use local HuggingFace embeddings
-        print("Using HuggingFace embeddings (local)...")
+        # Initialize embeddings - use local HuggingFace embeddings with CPU-only mode
+        print("Using HuggingFace embeddings (local, CPU-only for stability)...")
         self.embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2"
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+            model_kwargs={'device': 'cpu'},  # Force CPU usage
+            encode_kwargs={'batch_size': 4}  # Very small encoding batch
         )
         
         # Initialize LLM - use local Ollama LLM
@@ -76,36 +79,101 @@ class GCCDataRAG:
     
     def load_and_index_data(self):
         """Load Excel data and create vector index"""
-        print(f"Loading GCC data from {self.excel_file}...")
-        
-        if not os.path.exists(self.excel_file):
-            raise FileNotFoundError(f"Excel file not found: {self.excel_file}")
-        
-        # Read Excel file
-        df = pd.read_excel(self.excel_file, engine='openpyxl')
-        
-        # Convert to documents
-        documents = self._convert_df_to_documents(df)
-        
-        if not documents:
-            raise ValueError("No valid documents found in Excel file")
-        
-        print(f"Indexing {len(documents)} documents...")
-        
-        # Create vector store
-        self.vectorstore = Chroma.from_documents(
-            documents=documents,
-            embedding=self.embeddings,
-            persist_directory=self.persist_directory
-        )
-        
-        # Persist the database
-        self.vectorstore.persist()
-        
-        # Create QA chain
-        self._create_qa_chain()
-        
-        print("RAG system ready!")
+        try:
+            print(f"Loading GCC data from {self.excel_file}...")
+            
+            if not os.path.exists(self.excel_file):
+                raise FileNotFoundError(f"Excel file not found: {self.excel_file}")
+            
+            # Read Excel file
+            df = pd.read_excel(self.excel_file, engine='openpyxl')
+            print(f"✓ Loaded {len(df)} rows from Excel")
+            
+            # Convert to documents
+            print("Converting data to documents...")
+            documents = self._convert_df_to_documents(df)
+            
+            if not documents:
+                raise ValueError("No valid documents found in Excel file")
+            
+            print(f"✓ Created {len(documents)} documents")
+            
+            # Use batch processing for datasets > 100 documents to prevent memory issues
+            import math
+            import gc  # For garbage collection
+            batch_size = 5  # ULTRA conservative - test if ChromaDB can even initialize
+            
+            if len(documents) > 50:  # Use batching for anything over 50 docs
+                print(f"⏳ Large dataset detected - using batch processing to prevent crashes...")
+                batches = math.ceil(len(documents) / batch_size)
+                print(f"   Processing {len(documents)} documents in {batches} batches of {batch_size}...")
+                
+                for i in range(0, len(documents), batch_size):
+                    batch = documents[i:i+batch_size]
+                    batch_num = (i // batch_size) + 1
+                    
+                    try:
+                        if i == 0:
+                            # First batch - create new store
+                            print(f"   [Batch {batch_num}/{batches}] Creating vector store...")
+                            self.vectorstore = Chroma.from_documents(
+                                documents=batch,
+                                embedding=self.embeddings,
+                                persist_directory=self.persist_directory
+                            )
+                        else:
+                            # Subsequent batches - add to existing store
+                            print(f"   [Batch {batch_num}/{batches}] Adding {len(batch)} documents...")
+                            self.vectorstore.add_documents(batch)
+                        
+                        # Persist after EVERY batch to prevent data loss
+                        self.vectorstore.persist()
+                        gc.collect()  # Force garbage collection after every batch
+                        
+                        # Show progress every 10 batches
+                        if batch_num % 10 == 0:
+                            print(f"   ✓ Progress: {batch_num}/{batches} batches complete")
+                        
+                        # Small delay to prevent overwhelming the system
+                        if batch_num < batches:
+                            import time
+                            time.sleep(0.5)
+                            
+                    except Exception as e:
+                        print(f"   ✗ Batch {batch_num} failed: {str(e)}")
+                        import traceback
+                        traceback.print_exc()
+                        raise
+                
+                # Final persist
+                self.vectorstore.persist()
+                print("✓ All batches indexed and persisted successfully")
+                
+            else:
+                # Small dataset - index all at once
+                print(f"⏳ Indexing {len(documents)} documents...")
+                try:
+                    self.vectorstore = Chroma.from_documents(
+                        documents=documents,
+                        embedding=self.embeddings,
+                        persist_directory=self.persist_directory
+                    )
+                    self.vectorstore.persist()
+                    print("✓ Indexing completed")
+                except Exception as e:
+                    print(f"✗ Indexing failed: {str(e)}")
+                    raise
+            
+            # Create QA chain
+            print("Creating QA chain...")
+            self._create_qa_chain()
+            
+            print("✅ RAG system ready!")
+            
+        except Exception as e:
+            print(f"❌ Error loading/indexing data: {str(e)}")
+            print(f"   Check that {self.excel_file} exists and is not corrupted")
+            raise
     
     def _convert_df_to_documents(self, df: pd.DataFrame) -> List[Document]:
         """Convert DataFrame rows to LangChain documents"""

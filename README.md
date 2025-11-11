@@ -137,16 +137,16 @@ curl -fsSL https://ollama.ai/install.sh | sh
 
 #### 4.2 Install a Local LLM Model
 
-Pull a model (this will download ~4-7GB depending on the model):
+Pull a model (this will download ~637MB):
 
 ```bash
-ollama pull llama2
+ollama pull tinyllama
 ```
 
 **Recommended models:**
-- `llama2` - Good balance of quality and speed (~4GB)
+- `tinyllama` - Fast and efficient, works with 4GB VRAM (~637MB) **[DEFAULT]**
+- `llama3.2:1b` - Compact and fast (~1.3GB)
 - `mistral` - Fast and efficient (~4GB)
-- `llama2:13b` - Better quality but slower (~7GB)
 - `codellama` - Good for technical queries (~4GB)
 
 #### 4.3 Start Ollama Server
@@ -621,18 +621,18 @@ pip install langchain langchain-community ollama chromadb sentence-transformers
 ```
 
 **"Failed to connect to Ollama"**
-1. Start Ollama: `ollama serve` (or restart the Ollama service)
-2. Install a model: `ollama pull llama2`
+1. Start Ollama with GPU: `start_ollama_nvidia.bat` (Windows) or `ollama serve` (Linux/Mac)
+2. Install the model: `ollama pull tinyllama`
 3. Verify Ollama is running: `ollama list`
 
 **Slow responses**
-1. Use a smaller model: `ollama pull mistral` (faster)
-2. Edit `rag_engine.py` to change the model
+1. The default `tinyllama` model is already optimized for speed
+2. Ensure Ollama is using your NVIDIA GPU: run `start_ollama_nvidia.bat`
 3. Ensure you have enough RAM (8GB+ recommended)
 
 **Model not found**
 ```bash
-ollama pull llama2
+ollama pull tinyllama
 ```
 
 ### Port Already in Use
@@ -726,10 +726,10 @@ For support or questions, please refer to this documentation or contact the deve
 - [ ] Python 3.8+ installed
 - [ ] Node.js 18+ installed
 - [ ] Chrome browser installed
-- [ ] Ollama installed and running
+- [ ] Ollama installed and running with NVIDIA GPU (`start_ollama_nvidia.bat`)
 - [ ] Python dependencies installed (`pip list` shows all packages)
 - [ ] Frontend dependencies installed (`node_modules` folder exists)
-- [ ] Ollama model installed (`ollama pull llama2`)
+- [ ] Ollama model installed (`ollama pull tinyllama`)
 - [ ] Backend API starts successfully on port 5000
 - [ ] Frontend starts successfully on port 3000
 - [ ] Chrome opens with debug port 9222

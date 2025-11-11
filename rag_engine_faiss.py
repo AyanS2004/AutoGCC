@@ -13,16 +13,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 try:
-    from langchain_community.embeddings import HuggingFaceEmbeddings
+    from langchain_huggingface import HuggingFaceEmbeddings
     from langchain_community.vectorstores import FAISS
     from langchain.chains import RetrievalQA
     from langchain_community.llms import Ollama
     from langchain.prompts import PromptTemplate
     from langchain.schema import Document
     LANGCHAIN_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     LANGCHAIN_AVAILABLE = False
-    print("Warning: LangChain not installed. Install with: pip install langchain langchain-community ollama faiss-cpu sentence-transformers")
+    print(f"Warning: LangChain not installed or incomplete. Error: {str(e)}")
+    print("Install with: pip install langchain langchain-community langchain-huggingface ollama faiss-cpu")
 
 
 class GCCDataRAG:
@@ -30,9 +31,9 @@ class GCCDataRAG:
     
     def __init__(
         self,
-        excel_file: str = 'solutions.xlsx',
+        excel_file: str = 'book_final.xlsx',
         persist_directory: str = './faiss_index',
-        local_model: str = 'llama2'
+        local_model: str = 'tinyllama'
     ):
         if not LANGCHAIN_AVAILABLE:
             raise ImportError("LangChain is required for RAG functionality")
@@ -41,21 +42,24 @@ class GCCDataRAG:
         self.persist_directory = persist_directory
         self.local_model = local_model
         
-        # Initialize embeddings - use local HuggingFace embeddings
-        print("Using HuggingFace embeddings (local)...")
+        # Initialize embeddings - use local HuggingFace embeddings (CPU-only for stability)
+        print("✓ Using FAISS with HuggingFace embeddings (CPU-optimized)...")
         self.embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2"
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+            model_kwargs={'device': 'cpu'},
+            encode_kwargs={'batch_size': 8}
         )
         
-        # Initialize LLM - use local Ollama LLM
-        print(f"Using local Ollama LLM (model: {self.local_model})...")
-        print("Make sure Ollama is running: ollama serve")
+        # Initialize LLM - use local Ollama LLM with NVIDIA GPU
+        print(f"✓ Using local Ollama LLM (model: {self.local_model} with NVIDIA GPU)...")
+        print("Make sure Ollama is running with GPU: start_ollama_nvidia.bat")
         print(f"Make sure model is installed: ollama pull {self.local_model}")
         try:
             self.llm = Ollama(
                 model=self.local_model,
                 temperature=0.3,
-                num_predict=1000
+                num_predict=1000,  # Full response length
+                num_ctx=2048       # Context window size
             )
         except Exception as e:
             raise ValueError(
