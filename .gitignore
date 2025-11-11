@@ -62,5 +62,7 @@ frontend/dist/
 
 # OS
 Thumbs.db
-
+*.db
+*.bd-shm
+*.bd-wal
 

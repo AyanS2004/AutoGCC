@@ -4,7 +4,7 @@ A comprehensive full-stack application for extracting and analyzing Global Capab
 
 ---
 
-## 🚀 Features
+## Features
 
 ### Backend (Python)
 - **Automated Data Extraction**: Uses Selenium to extract GCC data from Perplexity AI
@@ -29,7 +29,7 @@ A comprehensive full-stack application for extracting and analyzing Global Capab
 
 ---
 
-## 📋 Prerequisites
+## Prerequisites
 
 ### System Requirements
 - **Python**: 3.8 or higher
@@ -46,7 +46,7 @@ A comprehensive full-stack application for extracting and analyzing Global Capab
 
 ---
 
-## 🛠️ Installation
+## Installation
 
 ### Step 1: Clone or Download the Project
 
@@ -191,7 +191,7 @@ NEXT_PUBLIC_API_URL=http://localhost:5000
 
 ---
 
-## 🚀 Running the Application
+## Running the Application
 
 ### Quick Start Scripts
 
@@ -265,7 +265,7 @@ Navigate to Perplexity AI and log in if required.
 
 ---
 
-## 📖 Usage Guide
+## Usage Guide
 
 ### Starting an Extraction
 
@@ -333,7 +333,7 @@ Then restart the backend API.
 
 ---
 
-## 📊 System Architecture
+## System Architecture
 
 ```
 ┌─────────────────┐         ┌──────────────────┐         ┌─────────────────┐
@@ -364,7 +364,7 @@ Then restart the backend API.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 AutoquestV2/
@@ -398,7 +398,7 @@ AutoquestV2/
 
 ---
 
-## 🔧 Configuration
+## Configuration
 
 ### Python Script Configuration
 
@@ -429,7 +429,7 @@ _rag_instance = GCCDataRAG(local_model='mistral')  # Change model here
 
 ---
 
-## 🔍 Data Fields Extracted
+## Data Fields Extracted
 
 The system extracts the following information for each company:
 
@@ -464,7 +464,7 @@ The system extracts the following information for each company:
 
 ---
 
-## 📡 API Endpoints
+## API Endpoints
 
 ### Base URL
 ```
@@ -587,7 +587,7 @@ GET /chat/status
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Chrome Connection Issues
 - Ensure Chrome is running with `--remote-debugging-port=9222`
@@ -658,7 +658,7 @@ npm run dev -- -p 3001
 
 ---
 
-## 💰 Cost Estimation
+## Cost Estimation
 
 ### Using Local Ollama (Current Setup)
 - **Embeddings:** Free (local HuggingFace model)
@@ -674,7 +674,7 @@ npm run dev -- -p 3001
 
 ---
 
-## 🔒 Security Notes
+## Security Notes
 
 - The system uses Chrome debug mode - only use on trusted machines
 - API keys and credentials should be stored in environment variables
@@ -683,45 +683,45 @@ npm run dev -- -p 3001
 
 ---
 
-## 🎯 Features Overview
+## Features Overview
 
 ### Frontend Features
-- 🌓 **Dark Mode** - Full dark/light theme support
-- 📊 **Real-time Dashboard** - Live extraction monitoring
-- 📈 **Statistics** - Success rates, counts, progress
-- 💬 **AI Chat** - Natural language data queries
-- 🎨 **Modern UI** - Beautiful, responsive design
-- 📱 **Mobile Friendly** - Works on all screen sizes
+- **Dark Mode** - Full dark/light theme support
+- **Real-time Dashboard** - Live extraction monitoring
+- **Statistics** - Success rates, counts, progress
+- **AI Chat** - Natural language data queries
+- **Modern UI** - Beautiful, responsive design
+- **Mobile Friendly** - Works on all screen sizes
 
 ### RAG Chatbot Features
-- ✅ **Natural Language Queries** - Ask questions in plain English
-- ✅ **Source Citations** - See which companies data comes from
-- ✅ **Context-Aware** - Understands GCC domain terminology
-- ✅ **Comparison** - Compare multiple companies
-- ✅ **Export** - Download chat history
-- ✅ **Refresh** - Update index when data changes
+- **Natural Language Queries** - Ask questions in plain English
+- **Source Citations** - See which companies data comes from
+- **Context-Aware** - Understands GCC domain terminology
+- **Comparison** - Compare multiple companies
+- **Export** - Download chat history
+- **Refresh** - Update index when data changes
 
 ---
 
-## 📝 License
+## License
 
 This project is proprietary. All rights reserved.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 For bug reports or feature requests, please contact the development team.
 
 ---
 
-## 📧 Support
+## Support
 
 For support or questions, please refer to this documentation or contact the development team.
 
 ---
 
-## 🎉 Getting Started Checklist
+## Getting Started Checklist
 
 - [ ] Python 3.8+ installed
 - [ ] Node.js 18+ installed
@@ -740,4 +740,4 @@ For support or questions, please refer to this documentation or contact the deve
 
 ---
 
-**Enjoy extracting and analyzing GCC data!** 🚀✨
+**Enjoy extracting and analyzing GCC data!**
